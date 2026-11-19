@@ -1,43 +1,43 @@
-// Neon Coast Cover Studio — the editor. Wires the controls (photos, layout,
-// grade, size, caption, per-panel crop) to the cover renderer, handles the
-// canvas pointer (click a panel to select it, drag to move its photo) and
-// the PNG export. A `?shot=` query instead sets up a fixed scene for a
-// screenshot (see ./shots.js).
-import { renderCover, POSTER_SIZES, POSTER_LAYOUTS, POSTER_GRADES, computePanels } from './cover.js';
+// Neon Coast Cover Studio — the editor. Connects the controls (photos,
+// layout, grade, size, caption, per-panel crop) to the poster renderer,
+// handles the canvas pointer (click a panel to pick it, drag to move its
+// photo) and the PNG export. A `?shot=` query instead sets up a fixed scene
+// for a screenshot (see ./shots.js).
+import { renderPoster, SIZES, LAYOUTS, GRADES, panelRects } from './cover.js';
 import { runShot } from './shots.js';
 
-const byId = (id) => document.getElementById(id);
-const canvas = byId('cover');
+const $ = (id) => document.getElementById(id);
+const poster = $('poster');
 
 const studio = {
   layout: 'hero3',
   grade: 'neon',
   size: 'wide',
   photos: [],       // Image objects (samples + uploads)
-  photoNames: [],   // display names, same index as photos
+  names: [],        // display names, same index as photos
   panels: [],       // { photo, zoom, ox, oy } per panel
   title: 'Neon Coast',
   subtitle: 'vice city',
   titleScale: 1,
-  selected: 0,      // selected panel index
+  active: 0,        // active panel index
 };
 
-const panelTotal = () => POSTER_LAYOUTS[studio.layout].panels;
+const panelCount = () => LAYOUTS[studio.layout].panels;
 
-function normalisePanels() {
-  const n = panelTotal();
+function syncPanels() {
+  const n = panelCount();
   while (studio.panels.length < n) studio.panels.push({ photo: 0, zoom: 1, ox: 0, oy: 0 });
   studio.panels.length = n;
-  if (studio.selected >= n) studio.selected = 0;
+  if (studio.active >= n) studio.active = 0;
 }
 
-function redraw() {
-  normalisePanels();
-  renderCover(canvas, studio);
-  refreshPanelControls();
+function repaint() {
+  syncPanels();
+  renderPoster(poster, studio);
+  refreshPanelBox();
 }
 
-function fetchImage(url) {
+function loadImage(url) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => resolve(img);
@@ -46,81 +46,79 @@ function fetchImage(url) {
   });
 }
 
-function loadSample(name) {
-  return fetchImage(`samples/${name}.jpg`);
-}
+const sampleURL = (name) => `samples/${name}.jpg`;
 
 function addPhoto(img, name) {
   if (studio.photos.length >= 4) {
-    byId('status').textContent = 'At most 4 photos — remove one first.';
+    $('status').textContent = 'At most 4 photos — remove one first.';
     return false;
   }
   studio.photos.push(img);
-  studio.photoNames.push(name);
-  renderThumbs();
+  studio.names.push(name);
+  renderPhotoChips();
   return true;
 }
 
-function renderThumbs() {
-  const list = byId('photos');
+function renderPhotoChips() {
+  const list = $('photos');
   list.innerHTML = '';
-  studio.photoNames.forEach((name, i) => {
+  studio.names.forEach((name, i) => {
     const b = document.createElement('button');
     b.type = 'button';
-    const inSelected = studio.panels[studio.selected] && studio.panels[studio.selected].photo === i;
-    b.className = 'thumb' + (inSelected ? ' active' : '');
+    const used = studio.panels[studio.active] && studio.panels[studio.active].photo === i;
+    b.className = 'chip' + (used ? ' on' : '');
     b.textContent = name;
-    b.title = `Use "${name}" in the selected panel`;
+    b.title = `Use "${name}" in the active panel`;
     b.addEventListener('click', () => {
-      studio.panels[studio.selected].photo = i;
-      redraw();
+      studio.panels[studio.active].photo = i;
+      repaint();
     });
     list.appendChild(b);
   });
-  const sel = byId('panelPhoto');
+  const sel = $('panelPhoto');
   sel.innerHTML = '';
-  studio.photoNames.forEach((name, i) => {
+  studio.names.forEach((name, i) => {
     const o = document.createElement('option');
     o.value = String(i);
     o.textContent = name;
     sel.appendChild(o);
   });
-  if (studio.panels[studio.selected]) sel.value = String(studio.panels[studio.selected].photo);
+  if (studio.panels[studio.active]) sel.value = String(studio.panels[studio.active].photo);
 }
 
-function refreshPanelControls() {
-  const p = studio.panels[studio.selected];
+function refreshPanelBox() {
+  const p = studio.panels[studio.active];
   if (!p) return;
-  byId('panelLabel').textContent = `Panel ${studio.selected + 1} of ${panelTotal()}`;
-  byId('panelPhoto').value = String(p.photo);
-  byId('panelZoom').value = String(p.zoom);
-  byId('zoomVal').textContent = `${Math.round(p.zoom * 100)}%`;
-  renderThumbs();
+  $('panelLabel').textContent = `Panel ${studio.active + 1} of ${panelCount()}`;
+  $('panelPhoto').value = String(p.photo);
+  $('panelZoom').value = String(p.zoom);
+  $('zoomVal').textContent = `${Math.round(p.zoom * 100)}%`;
+  renderPhotoChips();
 }
 
-function pickLayout(layout) {
+function chooseLayout(layout) {
   studio.layout = layout;
-  normalisePanels();
+  syncPanels();
   document.querySelectorAll('[data-layout]').forEach((b) =>
     b.classList.toggle('active', b.dataset.layout === layout));
-  redraw();
+  repaint();
 }
 
-function pickGrade(grade) {
+function chooseGrade(grade) {
   studio.grade = grade;
   document.querySelectorAll('[data-grade]').forEach((b) =>
     b.classList.toggle('active', b.dataset.grade === grade));
-  redraw();
+  repaint();
 }
 
-function pickSize(size) {
+function chooseSize(size) {
   studio.size = size;
   document.querySelectorAll('[data-size]').forEach((b) =>
     b.classList.toggle('active', b.dataset.size === size));
-  redraw();
+  repaint();
 }
 
-function savePNG(canvasEl, filename) {
+function downloadPNG(canvasEl, filename) {
   canvasEl.toBlob((blob) => {
     if (!blob) return;
     const a = document.createElement('a');
@@ -131,72 +129,72 @@ function savePNG(canvasEl, filename) {
   }, 'image/png');
 }
 
-function exportOne(sizeKey) {
-  const size = POSTER_SIZES[sizeKey];
+function exportSize(sizeKey) {
+  const size = SIZES[sizeKey];
   const off = document.createElement('canvas');
-  off.width = size.w;
-  off.height = size.h;
-  renderCover(off, { ...studio, size: sizeKey });
-  savePNG(off, `neon-coast-${sizeKey}-${size.w}x${size.h}.png`);
-  byId('status').textContent = `Exported ${size.label} as PNG.`;
+  off.width = size.width;
+  off.height = size.height;
+  renderPoster(off, { ...studio, size: sizeKey });
+  downloadPNG(off, `neon-coast-${sizeKey}-${size.width}x${size.height}.png`);
+  $('status').textContent = `Exported ${size.name} as PNG.`;
 }
 
-async function exportEverySize() {
-  for (const key of Object.keys(POSTER_SIZES)) {
-    exportOne(key);
+async function exportAllSizes() {
+  for (const key of Object.keys(SIZES)) {
+    exportSize(key);
     await new Promise((r) => setTimeout(r, 350));
   }
 }
 
 // ---- control wiring ----
 document.querySelectorAll('[data-layout]').forEach((b) =>
-  b.addEventListener('click', () => pickLayout(b.dataset.layout)));
+  b.addEventListener('click', () => chooseLayout(b.dataset.layout)));
 document.querySelectorAll('[data-grade]').forEach((b) =>
-  b.addEventListener('click', () => pickGrade(b.dataset.grade)));
+  b.addEventListener('click', () => chooseGrade(b.dataset.grade)));
 document.querySelectorAll('[data-size]').forEach((b) =>
-  b.addEventListener('click', () => pickSize(b.dataset.size)));
+  b.addEventListener('click', () => chooseSize(b.dataset.size)));
 
-byId('title').addEventListener('input', (e) => { studio.title = e.target.value; redraw(); });
-byId('subtitle').addEventListener('input', (e) => { studio.subtitle = e.target.value; redraw(); });
-byId('titleScale').addEventListener('input', (e) => {
+$('title').addEventListener('input', (e) => { studio.title = e.target.value; repaint(); });
+$('subtitle').addEventListener('input', (e) => { studio.subtitle = e.target.value; repaint(); });
+$('titleScale').addEventListener('input', (e) => {
   studio.titleScale = Number(e.target.value);
-  byId('scaleVal').textContent = `${Math.round(studio.titleScale * 100)}%`;
-  redraw();
+  $('scaleVal').textContent = `${Math.round(studio.titleScale * 100)}%`;
+  repaint();
 });
-byId('panelPhoto').addEventListener('change', (e) => {
-  studio.panels[studio.selected].photo = Number(e.target.value);
-  redraw();
+$('panelPhoto').addEventListener('change', (e) => {
+  studio.panels[studio.active].photo = Number(e.target.value);
+  repaint();
 });
-byId('panelZoom').addEventListener('input', (e) => {
-  studio.panels[studio.selected].zoom = Number(e.target.value);
-  redraw();
+$('panelZoom').addEventListener('input', (e) => {
+  studio.panels[studio.active].zoom = Number(e.target.value);
+  repaint();
 });
-byId('upload').addEventListener('change', async (e) => {
+$('upload').addEventListener('change', async (e) => {
   for (const file of e.target.files) {
-    const img = await fetchImage(URL.createObjectURL(file));
+    const img = await loadImage(URL.createObjectURL(file));
     addPhoto(img, file.name.replace(/\.[^.]+$/, '').slice(0, 18) || 'Photo');
   }
-  redraw();
+  repaint();
   e.target.value = '';
 });
-byId('sampleBoulevard').addEventListener('click', async () => {
-  const img = await loadSample('boulevard');
-  if (addPhoto(img, 'Boulevard')) redraw();
+$('sampleBoulevard').addEventListener('click', async () => {
+  const img = await loadImage(sampleURL('boulevard'));
+  if (addPhoto(img, 'Boulevard')) repaint();
 });
-byId('samplePier').addEventListener('click', async () => {
-  const img = await loadSample('pier');
-  if (addPhoto(img, 'Pier')) redraw();
+$('samplePier').addEventListener('click', async () => {
+  const img = await loadImage(sampleURL('pier'));
+  if (addPhoto(img, 'Pier')) repaint();
 });
-byId('export').addEventListener('click', () => exportOne(studio.size));
-byId('exportAll').addEventListener('click', exportEverySize);
+$('export').addEventListener('click', () => exportSize(studio.size));
+$('exportAll').addEventListener('click', exportAllSizes);
 
-// ---- canvas pointer: click a panel to select it, drag to move its photo ----
-function panelAtPoint(clientX, clientY) {
-  const rect = canvas.getBoundingClientRect();
+// ---- canvas pointer: click a panel to pick it, drag to move its photo ----
+function panelAt(clientX, clientY) {
+  const rect = poster.getBoundingClientRect();
   const fx = (clientX - rect.left) / rect.width;
   const fy = (clientY - rect.top) / rect.height;
   const gap = studio.layout === 'bleed' ? 0 : 0.008;
-  const rects = computePanels(studio.layout, gap);
+  const rects = panelRects(studio.layout, gap);
   for (let i = 0; i < rects.length; i++) {
     const r = rects[i];
     if (fx >= r.x && fx <= r.x + r.w && fy >= r.y && fy <= r.y + r.h) return i;
@@ -205,23 +203,23 @@ function panelAtPoint(clientX, clientY) {
 }
 
 let drag = null;
-canvas.addEventListener('pointerdown', (e) => {
-  const i = panelAtPoint(e.clientX, e.clientY);
-  studio.selected = i;
+poster.addEventListener('pointerdown', (e) => {
+  const i = panelAt(e.clientX, e.clientY);
+  studio.active = i;
   const p = studio.panels[i];
   drag = { x: e.clientX, y: e.clientY, ox: p.ox, oy: p.oy };
-  canvas.setPointerCapture(e.pointerId);
-  refreshPanelControls();
+  poster.setPointerCapture(e.pointerId);
+  refreshPanelBox();
 });
-canvas.addEventListener('pointermove', (e) => {
+poster.addEventListener('pointermove', (e) => {
   if (!drag) return;
-  const rect = canvas.getBoundingClientRect();
-  const p = studio.panels[studio.selected];
+  const rect = poster.getBoundingClientRect();
+  const p = studio.panels[studio.active];
   p.ox = Math.max(-0.5, Math.min(0.5, drag.ox + (e.clientX - drag.x) / rect.width));
   p.oy = Math.max(-0.5, Math.min(0.5, drag.oy + (e.clientY - drag.y) / rect.height));
-  redraw();
+  repaint();
 });
-canvas.addEventListener('pointerup', () => { drag = null; });
+poster.addEventListener('pointerup', () => { drag = null; });
 
 // ---- boot: load the fonts, then the sample photos, then draw ----
 async function boot() {
@@ -235,23 +233,23 @@ async function boot() {
   const shot = params.get('shot');
   if (shot) {
     await runShot(shot, params, studio, {
-      loadImage: fetchImage,
+      loadImage,
       addPhoto,
-      setLayout: pickLayout,
-      setGrade: pickGrade,
-      setSize: pickSize,
-      redraw,
+      setLayout: chooseLayout,
+      setGrade: chooseGrade,
+      setSize: chooseSize,
+      redraw: repaint,
     });
     return;
   }
-  const [bvd, pier] = await Promise.all([loadSample('boulevard'), loadSample('pier')]);
+  const [bvd, pier] = await Promise.all([loadImage(sampleURL('boulevard')), loadImage(sampleURL('pier'))]);
   studio.photos = [bvd, pier];
-  studio.photoNames = ['Boulevard', 'Pier'];
-  normalisePanels();
+  studio.names = ['Boulevard', 'Pier'];
+  syncPanels();
   // The hero panel gets the boulevard; the small panels share the pier.
   studio.panels.forEach((p, i) => { p.photo = studio.layout === 'hero3' && i === 0 ? 0 : 1; });
-  renderThumbs();
-  redraw();
+  renderPhotoChips();
+  repaint();
 }
 
 boot();

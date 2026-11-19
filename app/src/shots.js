@@ -6,14 +6,14 @@
 // than copies — small zooms and pans only, so faces stay in frame.
 const FRAMINGS = [
   { zoom: 1.0, ox: 0, oy: 0 },
-  { zoom: 1.22, ox: -0.05, oy: -0.04 },
-  { zoom: 1.16, ox: 0.05, oy: 0.03 },
-  { zoom: 1.26, ox: 0, oy: -0.05 },
-  { zoom: 1.11, ox: -0.06, oy: 0.05 },
-  { zoom: 1.3, ox: 0.04, oy: -0.02 },
-  { zoom: 1.19, ox: 0.03, oy: 0.06 },
-  { zoom: 1.27, ox: -0.03, oy: 0 },
-  { zoom: 1.13, ox: 0.06, oy: -0.05 },
+  { zoom: 1.24, ox: -0.06, oy: -0.03 },
+  { zoom: 1.18, ox: 0.06, oy: 0.04 },
+  { zoom: 1.28, ox: 0, oy: -0.06 },
+  { zoom: 1.12, ox: -0.05, oy: 0.06 },
+  { zoom: 1.31, ox: 0.05, oy: -0.03 },
+  { zoom: 1.2, ox: 0.04, oy: 0.05 },
+  { zoom: 1.26, ox: -0.04, oy: 0.02 },
+  { zoom: 1.15, ox: 0.05, oy: -0.06 },
 ];
 
 export async function runShot(shot, query, studio, api) {
@@ -34,12 +34,12 @@ export async function runShot(shot, query, studio, api) {
 
   const img = await api.loadImage(`samples/${photo}.jpg`);
   studio.photos = [img];
-  studio.photoNames = [photo[0].toUpperCase() + photo.slice(1)];
+  studio.names = [photo[0].toUpperCase() + photo.slice(1)];
   // A second sample fills the small panels of the hero layout.
   try {
     const other = await api.loadImage(`samples/${photo === 'boulevard' ? 'pier' : 'boulevard'}.jpg`);
     studio.photos.push(other);
-    studio.photoNames.push(photo === 'boulevard' ? 'Pier' : 'Boulevard');
+    studio.names.push(photo === 'boulevard' ? 'Pier' : 'Boulevard');
   } catch { /* one photo is enough */ }
   // Alternate the photos across panels so no two neighbours repeat.
   studio.panels.forEach((p, i) => { p.photo = i % studio.photos.length; });
