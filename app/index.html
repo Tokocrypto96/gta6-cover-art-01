@@ -3,40 +3,42 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Neon Coast Cover Studio — GTA-style cover art maker</title>
+<title>Neon Coast Cover Studio — make a GTA-style poster from your photo</title>
 <link rel="stylesheet" href="./style.css">
 </head>
 <body>
 <main class="app">
-  <section class="controls" aria-label="Cover controls">
-    <h1>Neon Coast <span>Cover Studio</span></h1>
-    <p class="tag">Your photo + a caption, made into GTA-style cover art. Offline — photos never leave this machine.</p>
+  <aside class="panel" aria-label="Poster controls">
+    <header>
+      <h1>Neon Coast<br><em>Cover Studio</em></h1>
+      <p class="tag">Turn a photo and a caption into a GTA-style poster. Runs fully offline — your photos never leave this device.</p>
+    </header>
 
-    <div class="group">
-      <h2>1 · Photos</h2>
-      <label class="file">Upload photos (up to 4)
+    <section class="block">
+      <h2>Photos</h2>
+      <label class="upload-label">Add up to 4 photos
         <input id="upload" type="file" accept="image/*" multiple>
       </label>
       <div class="row">
-        <button id="sampleBoulevard" type="button">+ Boulevard</button>
-        <button id="samplePier" type="button">+ Pier</button>
+        <button id="sampleBoulevard" type="button">+ Boulevard sample</button>
+        <button id="samplePier" type="button">+ Pier sample</button>
       </div>
       <div id="photos" class="thumbs" aria-label="Loaded photos"></div>
-      <p class="hint">Click a photo to put it in the selected panel. Click a panel on the cover to select it, drag it to move the photo.</p>
-    </div>
+      <p class="hint">Tap a photo to place it in the chosen panel. Tap a panel on the poster to choose it, then drag to reposition the photo inside it.</p>
+    </section>
 
-    <div class="group">
-      <h2>2 · Layout</h2>
+    <section class="block">
+      <h2>Layout</h2>
       <div class="row wrap">
-        <button type="button" data-layout="grid4">Grid 2×2</button>
+        <button type="button" data-layout="grid4">2×2 grid</button>
         <button type="button" data-layout="hero3" class="active">Hero + 3</button>
         <button type="button" data-layout="bleed">Full bleed</button>
-        <button type="button" data-layout="grid9">Grid 3×3</button>
+        <button type="button" data-layout="grid9">3×3 grid</button>
       </div>
-    </div>
+    </section>
 
-    <div class="group">
-      <h2>3 · Grade</h2>
+    <section class="block">
+      <h2>Colour grade</h2>
       <div class="row wrap">
         <button type="button" data-grade="sunset">☀ Sunset</button>
         <button type="button" data-grade="neon" class="active">✦ Neon night</button>
@@ -44,28 +46,28 @@
         <button type="button" data-grade="gold">● Golden hour</button>
         <button type="button" data-grade="noir">◐ Noir</button>
       </div>
-    </div>
+    </section>
 
-    <div class="group">
-      <h2>4 · Size</h2>
+    <section class="block">
+      <h2>Export size</h2>
       <div class="row wrap">
-        <button type="button" data-size="square">Square 1080²</button>
-        <button type="button" data-size="portrait">Portrait 1080×1350</button>
-        <button type="button" data-size="wide" class="active">Wide 1920×1080</button>
+        <button type="button" data-size="square">Square · 1080×1080</button>
+        <button type="button" data-size="portrait">Portrait · 1080×1350</button>
+        <button type="button" data-size="wide" class="active">Wide · 1920×1080</button>
       </div>
-    </div>
+    </section>
 
-    <div class="group">
-      <h2>5 · Caption</h2>
+    <section class="block">
+      <h2>Caption</h2>
       <label>Title <input id="title" type="text" maxlength="32" value="Neon Coast"></label>
       <label>Subtitle <input id="subtitle" type="text" maxlength="32" value="vice city"></label>
       <label>Title size <span id="scaleVal">100%</span>
         <input id="titleScale" type="range" min="0.6" max="1.4" step="0.05" value="1">
       </label>
-    </div>
+    </section>
 
-    <div class="group">
-      <h2>Selected panel</h2>
+    <section class="block">
+      <h2>Chosen panel</h2>
       <p id="panelLabel" class="hint">Panel 1 of 4</p>
       <label>Photo in this panel
         <select id="panelPhoto"></select>
@@ -73,16 +75,17 @@
       <label>Zoom <span id="zoomVal">100%</span>
         <input id="panelZoom" type="range" min="1" max="2.5" step="0.05" value="1">
       </label>
-    </div>
+    </section>
 
-    <div class="group">
-      <button id="export" type="button" class="primary">Export PNG — current size</button>
+    <section class="block actions">
+      <button id="export" type="button" class="primary">Export PNG — this size</button>
       <button id="exportAll" type="button">Export all 3 sizes</button>
       <p id="status" role="status"></p>
-    </div>
-  </section>
-  <section class="preview" aria-label="Cover preview">
-    <canvas id="cover" width="1920" height="1080" aria-label="The cover"></canvas>
+    </section>
+    <footer class="foot">Anton &amp; Pacifico under the SIL Open Font License. No Rockstar artwork, logo or font is used.</footer>
+  </aside>
+  <section class="preview" aria-label="Poster preview">
+    <canvas id="cover" width="1920" height="1080" aria-label="The poster"></canvas>
   </section>
 </main>
 <script type="module" src="./src/main.js"></script>

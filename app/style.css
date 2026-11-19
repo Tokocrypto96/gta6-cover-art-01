@@ -1,3 +1,5 @@
+/* Neon Coast Cover Studio — editor styling. Dark violet UI with neon pink
+   accents; the poster preview sits on a soft radial glow. */
 @font-face {
   font-family: 'Anton';
   src: url('./fonts/Anton-Regular.ttf') format('truetype');
@@ -13,24 +15,44 @@
   font-display: swap;
 }
 
+:root {
+  --bg: #14091f;
+  --bg-panel: #1d0b2e;
+  --bg-panel-2: #160a24;
+  --ink: #f4eefc;
+  --ink-dim: #c9b3e0;
+  --ink-faint: #a98fc4;
+  --line: #3a1c5c;
+  --line-soft: #2c1547;
+  --field: #241239;
+  --field-line: #4a2a72;
+  --accent: #ff2fb3;
+  --accent-soft: #ff7ae0;
+  --grad-a: #ff5e8a;
+  --grad-b: #a83df0;
+  --ok: #8fe3c0;
+}
+
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; }
 body {
-  background: #14091f;
-  color: #f4eefc;
+  background: var(--bg);
+  color: var(--ink);
   font: 14px/1.45 system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 .app { display: flex; min-height: 100vh; }
-.controls {
+
+/* ---- control panel ---- */
+.panel {
   width: 340px;
   flex: none;
   padding: 20px 18px 28px;
-  background: linear-gradient(180deg, #1d0b2e 0%, #160a24 100%);
-  border-right: 1px solid #3a1c5c;
+  background: linear-gradient(180deg, var(--bg-panel) 0%, var(--bg-panel-2) 100%);
+  border-right: 1px solid var(--line);
   overflow-y: auto;
   max-height: 100vh;
 }
-.controls h1 {
+.panel h1 {
   margin: 0 0 4px;
   font-family: 'Anton', sans-serif;
   font-weight: 400;
@@ -40,67 +62,72 @@ body {
   text-transform: uppercase;
   line-height: 1.05;
 }
-.controls h1 span {
+.panel h1 em {
   display: block;
-  background: linear-gradient(90deg, #ffe27a, #ff5e8a, #c65df0);
+  font-style: normal;
+  background: linear-gradient(90deg, #ffe27a, var(--grad-a), #c65df0);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
-.tag { margin: 0 0 16px; color: #c9b3e0; }
-.group { margin: 0 0 18px; padding-bottom: 14px; border-bottom: 1px solid #2c1547; }
-.group h2 {
+.tag { margin: 0 0 16px; color: var(--ink-dim); }
+.block { margin: 0 0 18px; padding-bottom: 14px; border-bottom: 1px solid var(--line-soft); }
+.block.actions { border-bottom: 0; }
+.block h2 {
   margin: 0 0 8px;
   font-size: 12px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #ff7ae0;
+  color: var(--accent-soft);
 }
 .row { display: flex; gap: 8px; }
 .row.wrap { flex-wrap: wrap; }
-.hint { margin: 8px 0 0; color: #a98fc4; font-size: 12.5px; }
+.hint { margin: 8px 0 0; color: var(--ink-faint); font-size: 12.5px; }
 label { display: flex; flex-direction: column; gap: 6px; font-weight: 600; margin-bottom: 8px; }
-label span { font-weight: 400; color: #c9b3e0; }
+label span { font-weight: 400; color: var(--ink-dim); }
 input[type=text], select {
   font: inherit;
-  color: #f4eefc;
-  background: #241239;
-  border: 1px solid #4a2a72;
+  color: var(--ink);
+  background: var(--field);
+  border: 1px solid var(--field-line);
   border-radius: 8px;
   padding: 9px 10px;
 }
-input[type=range] { width: 100%; accent-color: #ff2fb3; }
-input[type=file] { font: inherit; color: #c9b3e0; }
-.file { cursor: pointer; }
+input[type=range] { width: 100%; accent-color: var(--accent); }
+input[type=file] { font: inherit; color: var(--ink-dim); }
+.upload-label { cursor: pointer; }
 button {
   font: inherit;
   font-weight: 700;
   padding: 9px 12px;
-  border: 1px solid #4a2a72;
+  border: 1px solid var(--field-line);
   border-radius: 8px;
-  background: #241239;
-  color: #f4eefc;
+  background: var(--field);
+  color: var(--ink);
   cursor: pointer;
 }
-button:hover { border-color: #ff2fb3; }
+button:hover { border-color: var(--accent); }
 button.active {
-  background: linear-gradient(90deg, #ff5e8a, #a83df0);
+  background: linear-gradient(90deg, var(--grad-a), var(--grad-b));
   border-color: transparent;
   color: #fff;
 }
 button.primary {
   width: 100%;
-  background: linear-gradient(90deg, #ff5e8a, #a83df0);
+  background: linear-gradient(90deg, var(--grad-a), var(--grad-b));
   border: 0;
   color: #fff;
   padding: 12px;
   margin-bottom: 8px;
 }
 #exportAll { width: 100%; }
-#status { margin: 8px 0 0; color: #8fe3c0; min-height: 1.2em; }
+#status { margin: 8px 0 0; color: var(--ok); min-height: 1.2em; }
 .thumbs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .thumb { padding: 6px 9px; font-size: 12.5px; }
-.thumb.active { outline: 2px solid #ff7ae0; }
+.thumb.active { outline: 2px solid var(--accent-soft); }
+.foot { color: var(--ink-faint); font-size: 12px; }
+
+/* ---- poster preview ---- */
 .preview {
   flex: 1;
   display: flex;
@@ -110,7 +137,7 @@ button.primary {
   background:
     radial-gradient(900px 500px at 80% -10%, rgba(255, 47, 179, 0.20), transparent 60%),
     radial-gradient(700px 500px at 0% 110%, rgba(255, 150, 60, 0.16), transparent 60%),
-    #14091f;
+    var(--bg);
 }
 #cover {
   max-width: 100%;
@@ -121,7 +148,9 @@ button.primary {
   cursor: crosshair;
   touch-action: none;
 }
-body.shot-cover .controls { display: none; }
+
+/* ---- screenshot mode: poster only, full frame ---- */
+body.shot-cover .panel { display: none; }
 body.shot-cover .app { display: block; }
 body.shot-cover .preview { padding: 0; background: #000; }
 body.shot-cover #cover {
@@ -133,7 +162,8 @@ body.shot-cover #cover {
   box-shadow: none;
   cursor: default;
 }
+
 @media (max-width: 900px) {
   .app { flex-direction: column; }
-  .controls { width: 100%; max-height: none; border-right: 0; border-bottom: 1px solid #3a1c5c; }
+  .panel { width: 100%; max-height: none; border-right: 0; border-bottom: 1px solid var(--line); }
 }
